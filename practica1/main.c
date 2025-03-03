@@ -116,13 +116,12 @@ void concat( List *lista ) {
     Nodo *cad1 = getString( lista, i1 );
     Nodo *cad2 = getString( lista, i2 );
 
-    int newLenght = cad1->lenght + cad2->lenght + 1; // Para '\0'
+    int newLenght = cad1->lenght + cad2->lenght; // Para '\0'
     char *newCad = (char *) malloc( newLenght * sizeof( char ) );    
 
     // Función de la libreria strings.h que concatena 2 cadenas.
-    strcat( newCad, cad1->cadena );
+    strcpy( newCad, cad1->cadena );
     strcat( newCad, cad2->cadena );
-
     addElement( lista, newCad, newLenght );
 
     printf("Cadena agregada: 🥵 %s\n", newCad );
@@ -155,7 +154,7 @@ void strPow( List *lista ) {
         for( i = iPow; i <= 0; i++ )
             strcat( newCad, invCad);
 
-        addElement( lista, newCad, lenght );
+        addElement( lista, newCad, (-1) * lenght );
     }
     printf("Cadena agregada 😎");
 }
