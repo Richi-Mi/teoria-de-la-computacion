@@ -84,14 +84,12 @@ int readString( char* cadena ) {
     int i = 0;
     char c;
     while( ( c = getchar() ) != '\n') {
-        if( !(i >= MAX) ) {
-            cadena[i] = c;
-            i++;
-        }
-        else {
+        if( !(i >= MAX) ) 
+            cadena[i++] = c;
+        else 
             return -1;
-        }
     }
+    cadena[i] = '\0';
     return i;
 }
 // Función para mostrar el menú
@@ -116,7 +114,7 @@ void concat( List *lista ) {
     Nodo *cad1 = getString( lista, i1 );
     Nodo *cad2 = getString( lista, i2 );
 
-    int newLenght = cad1->lenght + cad2->lenght; // Para '\0'
+    int newLenght = cad1->lenght + cad2->lenght + 1; // Para '\0'
     char *newCad = (char *) malloc( newLenght * sizeof( char ) );    
 
     // Función de la libreria strings.h que concatena 2 cadenas.
@@ -137,7 +135,7 @@ void strPow( List *lista ) {
         char *newCad = "";
         addElement( lista, newCad, 0 );
     }
-    int lenght = (cad->lenght * iPow) + 1;
+    int lenght = (cad->lenght * abs(iPow)) + 1;
     if( iPow > 0 ) {
         char *newCad = (char *) malloc( lenght * sizeof(char) );
         for( i = 0; i < iPow; i++ )
@@ -146,15 +144,17 @@ void strPow( List *lista ) {
         addElement( lista, newCad, lenght );
     }
     if( iPow < 0 ) {
-        char *newCad = (char *) malloc( ( lenght * (-1)) * sizeof(char));
+        char *newCad = (char *) malloc( lenght * sizeof(char));
         char *invCad = (char *) malloc( cad->lenght * sizeof(char) );
 
         inverseString( cad, invCad );
 
-        for( i = iPow; i <= 0; i++ )
+        strcpy( newCad, invCad );
+
+        for( i = 1; i <= abs(iPow); i++ )
             strcat( newCad, invCad);
 
-        addElement( lista, newCad, (-1) * lenght );
+        addElement( lista, newCad, lenght - 1 );
     }
     printf("Cadena agregada 😎");
 }
@@ -162,9 +162,9 @@ void inverseString( Nodo *cadena, char *result ) {
     int i, j = 0;
     
     for( i = cadena->lenght - 1; i >= 0; i-- ) {
-        result[i] = cadena->cadena[j];
-        j++;
+        result[j++] = cadena->cadena[i];
     }
+    result[j] = '\0';
 }
 void inverse( List *lista ) {
     
