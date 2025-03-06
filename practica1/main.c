@@ -220,7 +220,7 @@ void subcadenas( List *lista ) {
     Nodo *string = getString( lista, index );
 
     for( int i = 0; i <= string->lenght; i++ ) {
-        for( int j = i; j <= string->lenght; j++ ) {
+        for( int j = i; j < string->lenght; j++ ) {
             if( i != j ) {
                 printf("🫥 ");
                 for( int k = i; k < j; k++ ) {
