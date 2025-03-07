@@ -4,95 +4,84 @@
 
 #include "listas.h"
 
-
 #define MAX 50
 
-int readString( char *cadena );
-void inverseString( Nodo *cadena, char *result );
+int readString(char *cadena);
+void inverseString(Nodo *cadena, char *result);
 void showMenu();
 
-void concat( List *lista );
-void strPow( List *lista );
-void inverse( List *lista ); 
-void prefijos( List *lista );
-void sufijos( List *lista );
-void subcadenas( List *lista );
+void concat(List *lista);
+void strPow(List *lista);
+void inverse(List *lista);
+void prefijos(List *lista);
+void sufijos(List *lista);
+void subcadenas(List *lista);
 
 int main() {
     char palabra1[MAX];
     char palabra2[MAX];
     
-    // Lectura de cadenas.
     printf("Ingrese la cadena x: ");
-    int l1 = readString( palabra1 );
+    int l1 = readString(palabra1);
     printf("Ingrese la cadena y: ");
-    int l2 = readString( palabra2 );
+    int l2 = readString(palabra2);
 
-    // Inicializar la lista.
     List listaCadenas;
     listaCadenas.inicial = NULL;
-    listaCadenas.lenght  = 0;
+    listaCadenas.lenght = 0;
 
-    addElement( &listaCadenas, palabra1, l1 );
-    addElement( &listaCadenas, palabra2, l2 );
+    addElement(&listaCadenas, palabra1, l1);
+    addElement(&listaCadenas, palabra2, l2);
 
     int option = 0;
 
     do {
         showMenu();
+        scanf("%d", &option);
 
-        scanf("%d", &option );
-
-        switch( option ) {
+        switch (option) {
             case 1:
-                concat( &listaCadenas );
-            break;
-
+                concat(&listaCadenas);
+                break;
             case 2:
-                prefijos( &listaCadenas );
-            break;
-
+                prefijos(&listaCadenas);
+                break;
             case 3:
-                sufijos( &listaCadenas );
-            break;
-
+                sufijos(&listaCadenas);
+                break;
             case 4:
-                inverse( &listaCadenas );
-            break;
-
+                inverse(&listaCadenas);
+                break;
             case 5:
-                strPow( &listaCadenas );
-            break;
-
+                strPow(&listaCadenas);
+                break;
             case 6:
-                showElements( listaCadenas );
-            break;
-
+                showElements(listaCadenas);
+                break;
             case 7:
-                subcadenas( &listaCadenas );
-            break;
-
+                subcadenas(&listaCadenas);
+                break;
             default:
                 option = 0;
-            break;
+                break;
         }
-    } while( option != 0 );
+    } while (option != 0);
 
-    eraseList( &listaCadenas );
+    eraseList(&listaCadenas);
 }
-int readString( char* cadena ) {
+
+int readString(char *cadena) {
     int i = 0;
     char c;
-    while( ( c = getchar() ) != '\n') {
-        if( !(i >= MAX) ) 
+    while ((c = getchar()) != '\n' && c != EOF) {
+        if (i < MAX - 1) {
             cadena[i++] = c;
-        else 
-            return -1;
+        }
     }
     cadena[i] = '\0';
     return i;
 }
-// Función para mostrar el menú
+
 void showMenu() {
     printf("\n*--------------------------------*\n");
     printf("1. Concatenación de las cadenas \n");
@@ -102,112 +91,99 @@ void showMenu() {
     printf("5. Potencia de una cadena       \n");
     printf("6. Ver cadenas                  \n");
     printf("7. Obtener todas las subcadenas \n");
-    printf("0. Salir                        ");
-    printf("\n*--------------------------------*\n");
+    printf("0. Salir                        \n");
+    printf("*--------------------------------*\n");
 }
-// Operaciones con cadenas.
-void concat( List *lista ) {
+
+void concat(List *lista) {
     printf("Escoje el indice de las cadenas que vas a concatenar: \nFormato: (indice1, indice2)\n");
     int i1, i2; 
     scanf("%d,%d", &i1, &i2);
 
-    Nodo *cad1 = getString( lista, i1 );
-    Nodo *cad2 = getString( lista, i2 );
+    Nodo *cad1 = getString(lista, i1);
+    Nodo *cad2 = getString(lista, i2);
 
-    int newLenght = cad1->lenght + cad2->lenght + 1; // Para '\0'
-    char *newCad = (char *) malloc( newLenght * sizeof( char ) );    
+    int newLength = cad1->lenght + cad2->lenght + 1;
+    char *newCad = (char *)malloc(newLength * sizeof(char));
+    if (!newCad) return;
 
-    // Función de la libreria strings.h que concatena 2 cadenas.
-    strcpy( newCad, cad1->cadena );
-    strcat( newCad, cad2->cadena );
-    addElement( lista, newCad, newLenght );
-
-    printf("Cadena agregada: 🥵 %s\n", newCad );
+    strcpy(newCad, cad1->cadena);
+    strcat(newCad, cad2->cadena);
+    addElement(lista, newCad, newLength);
+    printf("Cadena agregada: %s\n", newCad);
 }
-void strPow( List *lista ) {
+
+void strPow(List *lista) {
     printf("Ingrese el indice de la cadena, y el indice a elevarla: \nFormato: (iCad, iPow)\n");
     int iCad, iPow, i;
     scanf("%d,%d", &iCad, &iPow);
 
-    Nodo *cad = getString( lista, iCad );
+    Nodo *cad = getString(lista, iCad);
+    if (!cad) return;
 
-    if( iPow == 0 ) {
-        char *newCad = "";
-        addElement( lista, newCad, 0 );
+    int length = (cad->lenght * abs(iPow)) + 1;
+    char *newCad = (char *)malloc(length * sizeof(char));
+    if (!newCad) return;
+
+    newCad[0] = '\0';
+    for (i = 0; i < abs(iPow); i++) {
+        strcat(newCad, cad->cadena);
     }
-    int lenght = (cad->lenght * abs(iPow)) + 1;
-    if( iPow > 0 ) {
-        char *newCad = (char *) malloc( lenght * sizeof(char) );
-        for( i = 0; i < iPow; i++ )
-            strcat( newCad, cad -> cadena);
-        
-        addElement( lista, newCad, lenght );
-    }
-    if( iPow < 0 ) {
-        char *newCad = (char *) malloc( lenght * sizeof(char));
-        char *invCad = (char *) malloc( cad->lenght * sizeof(char) );
 
-        inverseString( cad, invCad );
-
-        strcpy( newCad, invCad );
-
-        for( i = 1; i <= abs(iPow); i++ )
-            strcat( newCad, invCad);
-
-        addElement( lista, newCad, lenght - 1 );
-    }
-    printf("Cadena agregada 😎");
+    addElement(lista, newCad, length - 1);
+    printf("Cadena agregada: %s\n", newCad);
 }
-void inverseString( Nodo *cadena, char *result ) {
+
+void inverseString(Nodo *cadena, char *result) {
     int i, j = 0;
-    
-    for( i = cadena->lenght - 1; i >= 0; i-- ) {
+    for (i = cadena->lenght - 1; i >= 0; i--) {
         result[j++] = cadena->cadena[i];
     }
     result[j] = '\0';
 }
-void inverse( List *lista ) {
-    
+
+void inverse(List *lista) {
     printf("Ingrese el indice de la cadena a invertir: ");
     int opt;
-    scanf("%d", &opt );
+    scanf("%d", &opt);
 
-    Nodo *string = getString( lista, opt );
+    Nodo *string = getString(lista, opt);
+    if (!string) return;
 
-    char *inverseCad = malloc( string->lenght * sizeof(char) );
-    inverseString( string, inverseCad );
+    char *inverseCad = (char *)malloc((string->lenght + 1) * sizeof(char));
+    if (!inverseCad) return;
 
-    printf("Cadena invertida: %s", inverseCad );
+    inverseString(string, inverseCad);
+    printf("Cadena invertida: %s\n", inverseCad);
 }
-void prefijos( List *lista ) {
+
+void prefijos(List *lista) {
     int index, i, j;
     printf("Ingresa el indice de la cadena a procesar: ");
     scanf("%d", &index);
 
-    Nodo *string = getString( lista, index );
-    for( i = 0; i <= string->lenght; i++ ) {
-        printf("🤩 ");
-        for( j = 0; j < i; j++ ) {
+    Nodo *string = getString(lista, index);
+    if (!string) return;
+
+    for (i = 0; i <= string->lenght; i++) {
+        for (j = 0; j < i; j++) {
             printf("%c", string->cadena[j]);
         }
         printf("\n");
     }
-
 }
-void sufijos( List *lista ){
+
+void sufijos(List *lista) {
     int index, i, j;
     printf("Ingresa el indice de la cadena a procesar: ");
     scanf("%d", &index);
 
-    Nodo *string = getString( lista, index );
+    Nodo *string = getString(lista, index);
+    if (!string) return;
 
-    for( i = string->lenght; i >= 0; i-- ) {
-        printf("💀 ");
-        for( j = 0; j <= string->lenght; j++ ) {
-            if( j < i ) 
-                printf(" ");
-            else 
-                printf("%c", string->cadena[j]);
+    for (i = string->lenght; i >= 0; i--) {
+        for (j = i; j < string->lenght; j++) {
+            printf("%c", string->cadena[j]);
         }
         printf("\n");
     }
