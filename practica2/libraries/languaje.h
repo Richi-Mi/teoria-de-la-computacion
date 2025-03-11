@@ -1,5 +1,7 @@
 #include "myString.h"
 
+#ifndef LANGUAJE_H 
+#define LANGUAJE_H  
 typedef struct LanguajeNode {
     String *inicioCadena;
 
@@ -22,3 +24,5 @@ Languaje* languajeUnion( Languaje *l1, Languaje *l2 );
 Languaje* languajeConcat( Languaje *l1, Languaje *l2 );
 Languaje* invertLanguaje( Languaje *lang );
 Languaje* powLanguaje( Languaje *lang, int p );
+
+#endif

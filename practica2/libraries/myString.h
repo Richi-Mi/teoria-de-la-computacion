@@ -1,5 +1,5 @@
-#ifndef MYSTRING_H  // Si MYSTRING_H no está definido...
-#define MYSTRING_H  // Definir MYSTRING_H
+#ifndef MYSTRING_H 
+#define MYSTRING_H  
 
 typedef struct Letter {
     char letter;
@@ -16,6 +16,7 @@ String* initString();
 void showString(String *cadena);
 void freeString(String *cadena);
 String* cadenaVacia();
+void addLetter(Letter **p, char letra);
 
 String* concat( String *cadena1, String *cadena2 );
 String* inverseString( String *cadena );
