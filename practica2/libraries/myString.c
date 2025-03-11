@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "myString.h"
 
 void addLetter(Letter **p, char letra) {
