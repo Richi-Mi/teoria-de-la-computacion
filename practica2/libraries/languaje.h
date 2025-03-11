@@ -21,3 +21,4 @@ void showLanguaje( Languaje *lang );
 Languaje* languajeUnion( Languaje *l1, Languaje *l2 );
 Languaje* languajeConcat( Languaje *l1, Languaje *l2 );
 Languaje* invertLanguaje( Languaje *lang );
+Languaje* powLanguaje( Languaje *lang, int p );

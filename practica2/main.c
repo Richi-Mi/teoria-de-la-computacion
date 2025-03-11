@@ -3,6 +3,25 @@
 
 #include "./libraries/myString.h"
 #include "./libraries/languaje.h"
+// Cerradura de Kleane (Calcular hasta la 4ta potencia)
+Languaje* cerraduraDeKleene( Languaje *lang ) {
+    Languaje *la = initLanguaje();
+    
+    for( int i = 1; i <= 4; i++ ) {
+        Languaje *aux = powLanguaje( lang, i );
+        la = languajeUnion( la, aux );
+    }
+    addString( la, cadenaVacia() );
+    return la;
+}
+Languaje* cerraduraPositiva( Languaje *lang ) {
+    Languaje *la = initLanguaje();
+    for( int i = 1; i <= 4; i++ ) {
+        Languaje *aux = powLanguaje( lang, i );
+        la = languajeUnion( la, aux );
+    }
+    return la;
+}
 
 int main() {
 
@@ -33,13 +52,13 @@ int main() {
 
     addString( newLang, cadena1 );
     addString( newLang, cadena2 );
-    addString( newLang, cadena2 );
+    addString( newLang, cadena3 );
 
-    printf("Lenguaje 1: \n");
+    //printf("Lenguaje 1: \n");
 
-    showLanguaje( newLang );
+    //showLanguaje( newLang );
 
-    printf("\n");
+    //printf("\n");
 
     Languaje *nL2 = initLanguaje();
 
@@ -47,33 +66,9 @@ int main() {
     addString( nL2, cadena2 );
     addString( nL2, cadena1 );
 
-    printf("Lenguaje 2: \n");
+    Languaje *k = cerraduraPositiva( newLang );
+    showLanguaje( k );
 
-    showLanguaje( nL2 );
-
-    printf("\n");
-
-    Languaje *lc = languajeUnion( newLang, nL2 );
-
-    printf("Lenguaje Unificado: \n");
-
-    showLanguaje( lc );
-
-    printf("\n");
-
-    Languaje *ld = languajeConcat( newLang, nL2 );
-
-    printf("Lenguaje concatenado: \n");
-
-    showLanguaje( ld );
-
-    printf("\n");
-
-    Languaje *li = invertLanguaje( newLang );
-
-    printf("Lenguaje invertido: \n");
-
-    showLanguaje( li );
 
     printf("\n");
 

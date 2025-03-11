@@ -132,3 +132,10 @@ String* powString(String *cadena, int p) {
 
     return cadenaNueva;
 }
+
+
+String* cadenaVacia() {
+    String *lVacio = malloc( sizeof( String ));
+    addLetter( &(lVacio->inicio), '0' );
+    return lVacio;
+}

@@ -14,6 +14,8 @@ typedef struct String {
 String* readString();
 String* initString();
 void showString(String *cadena);
+void freeString(String *cadena);
+String* cadenaVacia();
 
 String* concat( String *cadena1, String *cadena2 );
 String* inverseString( String *cadena );
