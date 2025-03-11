@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "myString.h"
 
-// Agrega una letra al final de la cadena
 void addLetter(Letter **p, char letra) {
     Letter *nL = malloc(sizeof(Letter));
     nL->letter = letra;
@@ -19,7 +18,6 @@ void addLetter(Letter **p, char letra) {
     }
 }
 
-// Inicializa un nuevo String vacío
 String* initString() {
     String *newString = malloc(sizeof(String));
     newString->length = 0;
@@ -27,7 +25,6 @@ String* initString() {
     return newString;
 }
 
-// Lee una cadena desde entrada estándar
 String* readString() {
     String *newCad = initString();
     char c;
@@ -40,7 +37,6 @@ String* readString() {
     return newCad;
 }
 
-// Imprime la cadena
 void showString(String *cadena) {
     Letter *i = cadena->inicio;
 
@@ -51,7 +47,6 @@ void showString(String *cadena) {
     printf("\n");
 }
 
-// Concatena dos cadenas y retorna una nueva
 String* concat(String *cadena1, String *cadena2) {
     String *cadenaNueva = initString();
     Letter *aux1 = cadena1->inicio;
@@ -101,7 +96,6 @@ String* inverseString(String *cadena) {
     return invString;
 }
 
-// Libera la memoria de un String
 void freeString(String *cadena) {
     if (cadena == NULL) return;
 
@@ -114,33 +108,25 @@ void freeString(String *cadena) {
 
     free(cadena);
 }
-String* powString( String cadena, int p ) {
+String* powString(String *cadena, int p) {
     String *cadenaNueva = initString();
-    if( p > 0 ) {
-        int i;
-        for( i = 0; i < p; i++ ) {
-            String *newCad = concat( cadenaNueva, &cadena );
-            String *aux = cadenaNueva;
+
+    if (p > 0) {
+        for (int i = 0; i < p; i++) {
+            String *newCad = concat(cadenaNueva, cadena);
+            freeString(cadenaNueva);
             cadenaNueva = newCad;
-
-            free(aux);
         }
-    }
-    // Cadena vacia.
-    if( p == 0 ) {
-        addLetter(&(cadenaNueva->inicio), ' ');
-    }
-
-    if( p < 0 ) {
-        String *ci = inverseString( &cadena );
-        int i, l = p * (-1);
-        for( i = 0; i < l; i++ ) {
-            String *newCad = concat( cadenaNueva, ci );
-            String *aux = cadenaNueva;
+    } else if (p < 0) {
+        // Invertimos una sola vez
+        String *ci = inverseString(cadena);
+        int l = -p;
+        for (int i = 0; i < l; i++) {
+            String *newCad = concat(cadenaNueva, ci);
+            freeString(cadenaNueva); 
             cadenaNueva = newCad;
-
-            free(aux);
         }
+        freeString(ci);
     }
 
     return cadenaNueva;
