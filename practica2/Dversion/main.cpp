@@ -8,7 +8,7 @@ vector<string> cargarLenguaje(const string &nombreArchivo) {
     string palabra;
 
     if (archivo.is_open()) {
-        while (archivo >> palabra) { // Leer palabras separadas por espacio
+        while (archivo >> palabra) {
             lenguaje.push_back(palabra);
         }
         archivo.close();
@@ -22,7 +22,7 @@ vector<string> cargarLenguaje(const string &nombreArchivo) {
 // Función para mostrar los lenguajes almacenados
 void mostrarLenguajes(const vector<vector<string>> &Index) {
     for (size_t i = 0; i < Index.size(); ++i) {
-        cout << i << ":" << endl; // Mostrar índice
+        cout << i << ":" << endl;
         cout << "L" << i + 1 << ": ";
         for (const auto &palabra : Index[i]) {
             cout << palabra << " ";
@@ -42,15 +42,66 @@ vector<string> concatenarLenguajes(const vector<string> &L1, const vector<string
     return resultado;
 }
 
-int main() {
-    vector<vector<string>> Index; // Lista principal
+// Función para unir dos lenguajes
+vector<string> unirLenguajes(const vector<string> &L1, const vector<string> &L2) {
+    vector<string> resultado = L1;
+    resultado.insert(resultado.end(), L2.begin(), L2.end());
+    return resultado;
+}
 
-    // Cargar los archivos A1, A2, A3, etc.
+// Función para calcular la potencia de un lenguaje
+vector<string> potenciaLenguaje(const vector<string> &L, int exponente) {
+    vector<string> resultado;
+
+    if (exponente == 0) {
+        resultado.push_back("λ");
+        return resultado;
+    }
+
+    if (exponente > 0) {
+        resultado = L;
+        for (int i = 1; i < exponente; ++i) {
+            vector<string> temp;
+            for (const auto &p1 : resultado) {
+                for (const auto &p2 : L) {
+                    temp.push_back(p1 + p2);
+                }
+            }
+            resultado = temp;
+        }
+    } else {
+        if (find(L.begin(), L.end(), "λ") == L.end()) {
+            cout << "No se puede calcular una potencia negativa si no está λ." << endl;
+        } else {
+            resultado.push_back("λ");
+        }
+    }
+
+    return resultado;
+}
+
+// Función para calcular la cerradura de Kleene de un lenguaje
+vector<string> cerraduraKleene(const vector<string> &L, int limite) {
+    vector<string> resultado;
+    resultado.push_back("λ");
+
+    vector<string> actual = L;
+    for (int i = 1; i <= limite; ++i) {
+        resultado.insert(resultado.end(), actual.begin(), actual.end());
+        actual = concatenarLenguajes(actual, L);
+    }
+
+    return resultado;
+}
+
+int main() {
+    vector<vector<string>> Index;
+
     for (int i = 1; ; ++i) {
         string nombreArchivo = "A" + to_string(i) + ".txt";
         ifstream prueba(nombreArchivo);
 
-        if (!prueba.is_open()) break; // Salir si no hay más archivos
+        if (!prueba.is_open()) break;
 
         Index.push_back(cargarLenguaje(nombreArchivo));
     }
@@ -60,6 +111,9 @@ int main() {
         cout << "\nMenu:" << endl;
         cout << "1. Mostrar Lenguajes almacenados" << endl;
         cout << "2. Concatenar dos lenguajes" << endl;
+        cout << "3. Unir dos lenguajes" << endl;
+        cout << "4. Calcular la potencia de un lenguaje" << endl;
+        cout << "5. Calcular la cerradura de Kleene de un lenguaje" << endl;
         cout << "0. Salir" << endl;
         cout << "Opcion: ";
         cin >> opcion;
@@ -75,13 +129,49 @@ int main() {
 
                 if (l1 >= 0 && l1 < Index.size() && l2 >= 0 && l2 < Index.size()) {
                     vector<string> resultado = concatenarLenguajes(Index[l1], Index[l2]);
-                    cout << "Resultado de la concatenación:" << endl;
                     for (const auto &palabra : resultado) {
                         cout << palabra << " ";
                     }
                     cout << endl;
-                } else {
-                    cout << "Indices inválidos." << endl;
+                }
+                break;
+            }
+            case 3: {
+                int l1, l2;
+                cout << "Ingrese los indices de los lenguajes a unir (ejemplo: 0 1): ";
+                cin >> l1 >> l2;
+
+                if (l1 >= 0 && l1 < Index.size() && l2 >= 0 && l2 < Index.size()) {
+                    vector<string> nuevoLenguaje = unirLenguajes(Index[l1], Index[l2]);
+                    Index.push_back(nuevoLenguaje);
+                }
+                break;
+            }
+            case 4: {
+                int l, exponente;
+                cout << "Ingrese el indice del lenguaje y la potencia (-5 a 10): ";
+                cin >> l >> exponente;
+
+                if (l >= 0 && l < Index.size()) {
+                    vector<string> resultado = potenciaLenguaje(Index[l], exponente);
+                    for (const auto &palabra : resultado) {
+                        cout << palabra << " ";
+                    }
+                    cout << endl;
+                }
+                break;
+            }
+            case 5: {
+                int l, limite;
+                cout << "Ingrese el indice del lenguaje y el limite de la cerradura: ";
+                cin >> l >> limite;
+
+                if (l >= 0 && l < Index.size() && limite > 0) {
+                    vector<string> resultado = cerraduraKleene(Index[l], limite);
+                    for (const auto &palabra : resultado) {
+                        cout << palabra << " ";
+                    }
+                    cout << endl;
                 }
                 break;
             }
