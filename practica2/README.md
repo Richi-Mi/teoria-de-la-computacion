@@ -38,3 +38,13 @@ las operaciones de unión y concatenación.
 
 * Se podrá decidir sobre que lenguaje realizar, las
 operaciones de cerradura, potencia y reflexión.
+
+## Ejecución.
+
+```Bash
+    # Si aun no le haz dado permisos.
+    chmod 755 run.sh
+
+    # Una vez con los permisos.
+    ./run.sh
+```
