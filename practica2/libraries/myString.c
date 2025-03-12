@@ -45,7 +45,6 @@ void showString(String *cadena) {
         printf("%c", i->letter);
         i = i->next;
     }
-    printf("\n");
 }
 
 String* concat(String *cadena1, String *cadena2) {
@@ -72,28 +71,20 @@ String* inverseString(String *cadena) {
     if (cadena == NULL || cadena->length == 0) return NULL;
 
     String *invString = initString();
-    char *cadenaInvertida = (char*)malloc(cadena->length * sizeof(char));
-
-    if (!cadenaInvertida) {
-        printf("Error: No se pudo asignar memoria\n");
-        return NULL;
-    }
+    char cadenaInvertida[ cadena -> length ];
 
     int i = cadena->length - 1;
     Letter *p = cadena->inicio;
 
-    while (p != NULL) {
-        cadenaInvertida[i] = p->letter;
-        i--;
+    while (p != NULL ) {
+        cadenaInvertida[i--] = p->letter;
         p = p->next;
     }
-
+    
     for (i = 0; i < cadena->length; i++)
         addLetter(&(invString->inicio), cadenaInvertida[i]);
 
     invString->length = cadena->length;
-    free(cadenaInvertida);  // Liberar memoria
-
     return invString;
 }
 

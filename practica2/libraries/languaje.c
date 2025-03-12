@@ -46,11 +46,13 @@ void addString(Languaje *lang, String *cadena) {
 void showLanguaje(Languaje *lang) {
     if (!lang) { return; }
     LanguajeNode *aux = lang->inicio;
-
+    printf("{ ");
     while (aux != NULL) {
         showString(aux->inicioCadena);
+        aux->next != NULL && printf(", ");
         aux = aux->next;
     }
+    printf(" }\n");
 }
 
 // Unión de dos lenguajes
@@ -121,7 +123,7 @@ Languaje* powLanguaje(Languaje *lang, int p) {
         return newLang;
         
     } else {
-        Languaje *invLang = invertLanguaje(lang);
+        Languaje *invLang = invertLanguaje( lang );
         Languaje *newLang = languajeUnion( invLang, initLanguaje() );
 
         for (int i = 1; i < -p; i++) {
