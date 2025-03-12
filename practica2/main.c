@@ -40,19 +40,23 @@ void menu() {
 int main() {
 
     int index = 0;
-    char indexLetter = 49;
     Languaje *arrregloLenguajes[ 50 ];
 
-    Languaje *l1 = readFileAndGetLanguaje("./build/lenguaje1.txt");
-    Languaje *l2 = readFileAndGetLanguaje("./build/lenguaje2.txt");
-    Languaje *l3 = readFileAndGetLanguaje("./build/lenguaje3.txt");
+    char route[255];
 
-    arrregloLenguajes[ index ] = l1; 
-    index++;
-    arrregloLenguajes[ index ] = l2;
-    index++;
-    arrregloLenguajes[ index ] = l3;
-    index++;
+    printf("Ingresa las rutas de los archivos donde estan los lenguajes: (ingresa salir para acabar) \n");
+
+    do {    
+        scanf("%s", route );
+
+        if( !strcmp("salir", route ) ) break;
+
+        Languaje *nL = NULL;
+        nL = readFileAndGetLanguaje( route );
+
+        if( nL != NULL ) 
+            arrregloLenguajes[ index++ ] = nL;
+    } while( 1 );
 
     int option; 
     
