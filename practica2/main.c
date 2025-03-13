@@ -80,7 +80,7 @@ int main() {
             index++;
 
             saveLanguaje( getFileName("union", index ), newLang );
-            printf("Lenguaje guardado en: %s\n", "langUnion12.txt" );
+            printf("Lenguaje guardado en: %s\n", getFileName("union", index ) );
         }
         if( option == 2 ) {
             printf("Ingresa los lenguajes a operar: ");
