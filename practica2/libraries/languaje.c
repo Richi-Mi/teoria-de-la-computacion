@@ -54,8 +54,11 @@ void showLanguaje(Languaje *lang) {
     }
     printf(" }\n");
 }
-
-// Unión de dos lenguajes
+/**
+ * Union de lenguajes.
+ * consiste en agregar las cadenas del lenguaje1 y lenguaje2 
+ * a un nuevo lenguaje.
+ */
 Languaje* languajeUnion(Languaje *l1, Languaje *l2) {
     if (!l1 || !l2) return NULL;
 
@@ -72,8 +75,13 @@ Languaje* languajeUnion(Languaje *l1, Languaje *l2) {
     }
     return newLang;
 }
-
-// Concatenación de dos lenguajes
+/**
+ * Concatenación de lenguajes.
+ * Verifica que ambos lenguajes no esten vacios para posteriormente
+ * ir concatenando cada cadena del lenguaje. 
+ * @param l1 Primer lenguaje
+ * @param l2 Segundo lenguaje
+ */
 Languaje* languajeConcat(Languaje *l1, Languaje *l2) {
     if (!l1 || !l2) return NULL;
 
@@ -90,8 +98,10 @@ Languaje* languajeConcat(Languaje *l1, Languaje *l2) {
     }
     return newLang;
 }
-
-// Invierte todas las cadenas del lenguaje
+/**
+ * Reflexión de un lenguaje
+ * Consiste en invertir todas las cadenas de ese lenguaje.
+ */
 Languaje* invertLanguaje(Languaje *lang) {
     if (!lang) return NULL;
 
