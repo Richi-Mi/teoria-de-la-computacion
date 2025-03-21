@@ -4,10 +4,14 @@ to send a HTTP request and obtain the page's content.
 
 The following code is a basic example of the use of this library"""
 
+
+"""El código accede a una pagina web y devuelve todo el contenido HTML"""
+
 import urllib.request
 
 # URL de la página web a la que deseas acceder
-url = "https://www.example.com"
+#url = "https://www.example.com"
+url = "https://www.python.org"
 
 try:
     # Enviar la solicitud HTTP y obtener la respuesta
