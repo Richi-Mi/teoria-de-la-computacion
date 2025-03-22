@@ -17,84 +17,55 @@ import re
 
 #Solicitamos al usuario los 3 URL
 
-url1 = input("Ingresa la URL de la página web: ")
-url2 = input("Ingresa la URL de la página web: ")
-url3 = input("Ingresa la URL de la página web: ")
+# Solicitamos las 3 URLs al usuario MEJOR MANEJO EN UNA LISTA
+urls = [input(f"Ingrese la URL {i+1}: ") for i in range(3)]
+
 
 #Definimos la expresión regular de un correo electrónico.
 
+# Expresión regular para correos electrónicos
+regex_correo = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 
+# Expresión regular para links
+regex_link = re.compile(r'href=["\'](https?://[^"\']+)["\']')
 
-"""
-Para evitar bloqueos al hacer la solicitud HTTP, agregamos un "User-Agent" en los headers.
-Algunas páginas web bloquean solicitudes sin un User-Agent válido porque parecen ser de bots.
-Aquí estamos simulando el User-Agent de un navegador Chrome.
-"""
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
-}
+#Creamos los dos archivos de salida para correos y LINKS
 
-# Creamos la solicitud HTTP con los headers
-req = urllib.request.Request(url, headers=headers)
+# Creamos los archivos de salida e iteramos por cada URL buscando las coincidencias.
+with open("correos.txt", "w") as file1, open("links.txt", "w") as file2:
+    for url in urls:
+        print(f"\n🔍 Analizando: {url}")
 
-try:
-    """ 
-    Enviamos la solicitud HTTP y leemos la respuesta.
-    La página web se obtiene en bytes, por lo que la decodificamos a UTF-8 para manejar texto.
-    """
-    with urllib.request.urlopen(req) as response:
-        html = response.read().decode("utf-8")
+        # Definir headers para simular un navegador
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+        }
 
-    """ 
-    #Expresión regular para buscar la palabra exacta en el HTML.
-    
-    Patrón explicado:
-    - (?:^|[\s.,!?;:"'()<>-]) → Asegura que la palabra no esté dentro de otra.
-      - `^` → Puede estar al inicio del texto.
-      - `[\s.,!?;:"'()<>-]` → También puede estar precedida por un espacio o un signo de puntuación.
+        # Hacer la solicitud HTTP
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req) as response:
+                html = response.read().decode("utf-8")
 
-    - (" + re.escape(palabra) + ") → La palabra exacta que buscamos.
-      - `re.escape(palabra)` → Escapa caracteres especiales en la palabra (por seguridad).
-      - `()` → Captura la coincidencia para extraer la posición de inicio y fin.
+            # Buscar correos
+            correos = regex_correo.findall(html)
+            if correos:
+                file1.write(f"\nCorreos encontrados en {url}:\n" + "\n".join(set(correos)) + "\n")
+                print(f"📧 {len(correos)} correos encontrados.")
+            else:
+                print("❌ No se encontraron correos.")
 
-    - (?:[\s.,!?;:"'()<>-]|$) → Asegura que la palabra termine correctamente.
-      - `[\s.,!?;:"'()<>-]` → Debe estar seguida de un espacio o un signo de puntuación.
-      - `$` → También puede estar al final del texto.
+            # Buscar links
+            links = regex_link.findall(html)
+            if links:
+                file2.write(f"\nLinks encontrados en {url}:\n" + "\n".join(set(links)) + "\n")
+                print(f"🔗 {len(links)} links encontrados.")
+            else:
+                print("❌ No se encontraron links.")
 
-    - `re.IGNORECASE` → Permite coincidencias sin distinguir mayúsculas o minúsculas.
-    """
-    pattern = re.compile(r"(?:^|[\s.,!?;:\"'()<>-])(" + re.escape(palabra) + r")(?:[\s.,!?;:\"'()<>-]|$)", re.IGNORECASE)
-
-    """
-    `finditer()` busca todas las coincidencias en el texto y devuelve objetos Match.
-    Extraemos las posiciones de inicio y fin de cada coincidencia.
-    """
-    matches = [(m.start(1), m.end(1)) for m in pattern.finditer(html)]
-
-    """ 
-    Si encontramos coincidencias, mostramos cuántas hay y hasta 10 fragmentos de contexto.
-    Extraemos un poco de texto antes y después para dar mejor visualización.
-    """
-    if matches:
-        print(f"\n🔍 Se encontraron {len(matches)} coincidencias exactas de '{palabra}':\n")
-        for i, (start, end) in enumerate(matches, 1):  # Muestra hasta 10 fragmentos
-            fragmento = html[max(0, start - 30): min(len(html), end + 30)]
-            print(f"{i}. ...{fragmento.strip()}...")
-    else:
-        print(f"\n❌ No se encontró la palabra exacta '{palabra}' en la página.")
-
-except urllib.error.HTTPError as e:
-    """ 
-    Captura errores HTTP (como 403 Forbidden, 404 Not Found, etc.).
-    """
-    print(f"Error HTTP: {e}")
-except urllib.error.URLError as e:
-    """ 
-    Captura errores de conexión o direcciones inválidas.
-    """
-    print(f"Error de URL: {e}")
-except Exception as e:
-    """ 
-    Captura cualquier otro error inesperado para evitar que el programa se detenga bruscamente.
-    """
-    print(f"Error inesperado: {e}")
+        except urllib.error.HTTPError as e:
+            print(f"⚠️ Error HTTP: {e}")
+        except urllib.error.URLError as e:
+            print(f"⚠️ Error de URL: {e}")
+        except Exception as e:
+            print(f"⚠️ Error inesperado: {e}")
