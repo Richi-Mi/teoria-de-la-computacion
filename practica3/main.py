@@ -51,7 +51,7 @@ with open("correos.txt", "w") as file1, open("links.txt", "w") as file2:
             correos = regex_correo.findall(html)
             if correos:
                 file1.write(f"\nCorreos encontrados en {url}:\n" + "\n".join(set(correos)) + "\n")
-                print(f"📧 {len(correos)} correos encontrados.")
+                print(f"📩 {len(correos)} correos encontrados.")
             else:
                 print("❌ No se encontraron correos.")
 
@@ -59,7 +59,7 @@ with open("correos.txt", "w") as file1, open("links.txt", "w") as file2:
             links = regex_link.findall(html)
             if links:
                 file2.write(f"\nLinks encontrados en {url}:\n" + "\n".join(set(links)) + "\n")
-                print(f"🔗 {len(links)} links encontrados.")
+                print(f"🌐 {len(links)} links encontrados.")
             else:
                 print("❌ No se encontraron links.")
 
