@@ -41,8 +41,34 @@ if "string" in mystr:
 if "siom" not in mystr:
     print("there isn't siom")
 # substring
-b = "Hello, World!"
+b = "Hello, World! "
+print( b[2:5] )
 
-list = [ 9, 8 , 4, 2, 2 ]
+# # Modify strings.
+# strip, lower y upper
+print( b.upper() )
+print( b.lower() )
+print( b.strip() ) # elimina espacios al final
 
-print(b[2:5])
+print( b.replace("H", "J") ) # Reemplaza un string por otro en el texto.
+
+print( b.split(",") )
+
+# F-Strings
+age = 20
+ntxt = f"The age is {age} \n"
+print( "age" in ntxt and "k" not in ntxt )
+
+# booleans.
+# True, False sirven para manejo de operadores.
+
+# Python operators
+# +	Addition	x + y	
+# -	Subtraction	x - y	
+# *	Multiplication	x * y	
+# /	Division	x / y	
+# %	Modulus	x % y	
+# **	Exponentiation	x ** y	
+# //	Floor division	x // y
+
+print(5**3)

@@ -2,6 +2,7 @@
 
 #ifndef LANGUAJE_H 
 #define LANGUAJE_H  
+
 typedef struct LanguajeNode {
     String *inicioCadena;
 
