@@ -36,8 +36,10 @@ try:
            print(f"{key} -> {value}")
 except FileNotFoundError:
     print(" X - Archivo no encontrado")
+    exit(1)
 except Exception:
     print(" X - Ocurrio un error inesperado.")
+    exit(1)
 
 def verifyInput(cadena):
     currentState = initialState      
