@@ -27,7 +27,11 @@ def draw_automaton(transitions, initialState, finalStates):
 
     # Todos los estados con el mismo estilo naranja
     for state in estados:
-        dot.node(state, shape="circle", style='filled', fillcolor='orange', fontname='Helvetica')
+        # Si el estado es final, le ponemos el doble círculo
+        if state in finalStates:
+            dot.node(state, shape="doublecircle", style='filled', fillcolor='orange', fontname='Helvetica')
+        else:
+            dot.node(state, shape="circle", style='filled', fillcolor='orange', fontname='Helvetica')
 
     dot.edge('', initialState)  # Flecha de inicio
 
