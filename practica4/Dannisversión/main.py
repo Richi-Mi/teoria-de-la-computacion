@@ -90,6 +90,6 @@ while True:
     if cadena.upper() == "SALIR":
         break
     if verifyInput(cadena):
-        print(" 0 - CADENA VÁLIDA.")
+        print(" ✅ - 0 - CADENA VÁLIDA.")
     else:
-        print(" X - Cadena inválida.")
+        print(" ❌- X - Cadena inválida.")

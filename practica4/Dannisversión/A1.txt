@@ -1,12 +1,12 @@
 0 1
 4
-PP
-PI
-PP,0 IP
-PP,1 PI
-PI,0 II
-PI,1 PP
-IP,0 PP
-IP,1 II
-II,0 PI
-II,1 IP
+q0
+q1
+q0,0 q2
+q0,1 q1
+q1,0 q3
+q1,1 q0
+q2,0 q0
+q2,1 q3
+q3,0 q1
+q3,1 q2
