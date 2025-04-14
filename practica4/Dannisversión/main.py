@@ -1,77 +1,93 @@
-# Pedimos el nombre del archivo donde definimos el automata.
-print("Ingresa archivo donde esta el automata: ")
+from graphviz import Digraph
+import os
+
+# 🔧 Forzamos manualmente el path a Graphviz para que funcione correctamente
+os.environ["PATH"] += os.pathsep + "C:\\Program Files\\Graphviz\\bin"
+
+# Pedimos el nombre del archivo donde definimos el autómata.
+print("Ingresa archivo donde está el autómata: ")
 fileName = input()
 
-def readInfo( list, index ):
-    # Regresamos la información como lista.
+def readInfo(list, index):
     return list[index].strip().split(" ")
 
-# Intentamos abrir el archivo, si no lo encuentra lanzamos una excepción.
+def draw_automaton(transitions, initialState, finalStates):
+    dot = Digraph()
+    dot.attr(rankdir='LR')  # Dirección de izquierda a derecha
+
+    dot.node('', shape="none")  # Nodo invisible para el inicio
+
+    # Extraer estados únicos
+    estados = set()
+    for (origin, symbol), destination in transitions.items():
+        estados.add(origin)
+        estados.add(destination)
+
+    # Agregar nodos
+    for state in estados:
+        if state in finalStates:
+            dot.node(state, shape="doublecircle")
+        else:
+            dot.node(state, shape="circle")
+
+    # Flecha de inicio
+    dot.edge('', initialState)
+
+    # Agregar transiciones
+    for (origin, symbol), destination in transitions.items():
+        dot.edge(origin, destination, label=symbol)
+
+    # Renderizar el grafo
+    dot.render('automata', format='png', cleanup=True)
+    print("✅ Imagen del autómata generada como 'automata.png'")
+
+# Intentamos abrir el archivo
 try:
     with open(fileName, "r") as file:
         lines = file.readlines()
-        # Leemos el alfabeto 
-        alphabet = readInfo( lines, 0 )
-        # Leemos el numero de estados del automata.
-        states   = lines[1].strip();
-        # Leemos el estado inicial.
-        initialState = lines[2].strip();
-        # Leemos los estados finales como lista.
-        finalStates = readInfo( lines, 3 )
-
-        # Creamos un diccionario vacio.
+        alphabet = readInfo(lines, 0)
+        states = lines[1].strip()
+        initialState = lines[2].strip()
+        finalStates = readInfo(lines, 3)
         transitions = {}
 
-        # Leeremos la función de transición.
         for line in lines[4:]:
-            fun = line.strip().split(" ") 
-            originWithSimbol = fun[0].split(",")
-            origin = originWithSimbol[0]
-            simbol = originWithSimbol[1]
-            transitions[(origin, simbol)] = fun[1]
-        
-        # Imprimimos tabla de transiciones.
-        print(" * Automata cargado. ")
+            fun = line.strip().split(" ")
+            origin, symbol = fun[0].split(",")
+            transitions[(origin, symbol)] = fun[1]
+
+        print(" * Autómata cargado.")
         for key, value in transitions.items():
-           print(f"{key} -> {value}")
+            print(f"{key} -> {value}")
+
+        draw_automaton(transitions, initialState, finalStates)
+
 except FileNotFoundError:
     print(" X - Archivo no encontrado")
     exit(1)
-except Exception:
-    print(" X - Ocurrio un error inesperado.")
+except Exception as e:
+    print(" X - Ocurrió un error inesperado:", e)
     exit(1)
-except IndexError:
-    print(" X - El archivo no tiene el formato correcto.")
-    exit(1)
-
 
 def verifyInput(cadena):
-    currentState = initialState      
-
+    currentState = initialState
     for symbol in cadena:
-        # Verifica que el caracter pertenezca al alfabeto.
         if symbol not in alphabet:
-            return False  
-        # Creamos la tupla que servira para acceder al siguiente estado en el diccionario
+            return False
         key = (currentState, symbol)
-        # Verificamos que la tupla exista en el diccionario.
         if key not in transitions:
             return False
         currentState = transitions[key]
-    
-    # Verificamos que la cadena se encuentre en los estados finales.
-    if currentState in finalStates:
-        return True
-    else:
-        return False
+    return currentState in finalStates
 
-# Comenzamos verificación de cadenas.
-print(" * Ingrese cadenas para validar el automata. ")
+# Verificación de cadenas
+print(" * Ingrese cadenas para validar el autómata. (Escribe 'SALIR' para terminar)")
 cadena = ""
-while ( cadena.upper() != "SALIR" ): 
+while cadena.upper() != "SALIR":
     cadena = input()
-    if( verifyInput(cadena) ):
-        print(" 0 - CADENA VALIDA. ")
+    if cadena.upper() == "SALIR":
+        break
+    if verifyInput(cadena):
+        print(" 0 - CADENA VÁLIDA.")
     else:
-        print(" X - Cadena invalida. ")
-    
+        print(" X - Cadena inválida.")

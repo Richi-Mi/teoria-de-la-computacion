@@ -1,0 +1,12 @@
+0 1
+4
+PP
+PI
+PP,0 IP
+PP,1 PI
+PI,0 II
+PI,1 PP
+IP,0 PP
+IP,1 II
+II,0 PI
+II,1 IP
