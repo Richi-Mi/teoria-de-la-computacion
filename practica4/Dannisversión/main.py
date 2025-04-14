@@ -1,59 +1,48 @@
 from graphviz import Digraph
 import os
+from collections import defaultdict
 
-# 🔧 Forzamos manualmente el path a Graphviz para que funcione correctamente
+# 🔧 Aseguramos el path a Graphviz
 os.environ["PATH"] += os.pathsep + "C:\\Program Files\\Graphviz\\bin"
 
-# Pedimos el nombre del archivo donde definimos el autómata.
 print("Ingresa archivo donde está el autómata: ")
 fileName = input()
 
-def readInfo(list, index):
-    return list[index].strip().split(" ")
+def readInfo(lines, index):
+    return lines[index].strip().split(" ")
 
 def draw_automaton(transitions, initialState, finalStates):
     dot = Digraph()
-    dot.attr(rankdir='LR')  # Dirección de izquierda a derecha
+    dot.attr(rankdir='LR', fontname='Helvetica')  # Dirección y fuente
 
-    dot.node('', shape="none")  # Nodo invisible para el inicio
+    # ⚙️ Estilo de flechas
+    dot.attr('edge', color='gray30', penwidth='2.2', fontcolor='black')
+
+    dot.node('', shape="none")  # Nodo invisible de inicio
 
     # Extraer estados únicos
     estados = set()
     for (origin, symbol), destination in transitions.items():
-        estados.add(origin)
-        estados.add(destination)
+        estados.update([origin, destination])
 
-    # Agregar nodos
+    # Todos los estados con el mismo estilo naranja
     for state in estados:
-        if state in finalStates:
-            dot.node(state, shape="doublecircle")
-        else:
-            dot.node(state, shape="circle")
+        dot.node(state, shape="circle", style='filled', fillcolor='orange', fontname='Helvetica')
 
-    # Flecha de inicio
-    dot.edge('', initialState)
+    dot.edge('', initialState)  # Flecha de inicio
 
-    # Agregar transiciones
-    """ for (origin, symbol), destination in transitions.items():
-        dot.edge(origin, destination, label=symbol) """
-    
-    from collections import defaultdict
-
-    # Agrupar transiciones por origen y destino
+    # Agrupar transiciones
     edges = defaultdict(list)
     for (origin, symbol), destination in transitions.items():
         edges[(origin, destination)].append(symbol)
 
-    # Agregar transiciones agrupadas
     for (origin, destination), symbols in edges.items():
-        dot.edge(origin, destination, label=",".join(symbols))
+        dot.edge(origin, destination, label=",".join(symbols), fontname='Helvetica')
 
-
-    # Renderizar el grafo
     dot.render('automata', format='png', cleanup=True)
     print("✅ Imagen del autómata generada como 'automata.png'")
 
-# Intentamos abrir el archivo
+# Carga del archivo
 try:
     with open(fileName, "r") as file:
         lines = file.readlines()
@@ -64,9 +53,11 @@ try:
         transitions = {}
 
         for line in lines[4:]:
-            fun = line.strip().split(" ")
-            origin, symbol = fun[0].split(",")
-            transitions[(origin, symbol)] = fun[1]
+            if not line.strip():
+                continue
+            origin, symbol = line.strip().split(" ")[0].split(",")
+            destination = line.strip().split(" ")[1]
+            transitions[(origin, symbol)] = destination
 
         print(" * Autómata cargado.")
         for key, value in transitions.items():
@@ -94,8 +85,7 @@ def verifyInput(cadena):
 
 # Verificación de cadenas
 print(" * Ingrese cadenas para validar el autómata. (Escribe 'SALIR' para terminar)")
-cadena = ""
-while cadena.upper() != "SALIR":
+while True:
     cadena = input()
     if cadena.upper() == "SALIR":
         break
