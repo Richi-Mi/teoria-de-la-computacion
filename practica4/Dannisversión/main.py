@@ -34,8 +34,20 @@ def draw_automaton(transitions, initialState, finalStates):
     dot.edge('', initialState)
 
     # Agregar transiciones
+    """ for (origin, symbol), destination in transitions.items():
+        dot.edge(origin, destination, label=symbol) """
+    
+    from collections import defaultdict
+
+    # Agrupar transiciones por origen y destino
+    edges = defaultdict(list)
     for (origin, symbol), destination in transitions.items():
-        dot.edge(origin, destination, label=symbol)
+        edges[(origin, destination)].append(symbol)
+
+    # Agregar transiciones agrupadas
+    for (origin, destination), symbols in edges.items():
+        dot.edge(origin, destination, label=",".join(symbols))
+
 
     # Renderizar el grafo
     dot.render('automata', format='png', cleanup=True)
