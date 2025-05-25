@@ -4,7 +4,7 @@ Este es el repositorio de las practicas de teoria de la computación.
 
 ![GitHub contributors](https://img.shields.io/github/contributors/Richi-Mi/teoria-de-la-computacion)
 
-## Contribuyentes.
+## Contribuitors.
 
 <a href="https://github.com/Richi-Mi">
   <img src="https://github.com/Richi-Mi.png" width="50" height="50" />

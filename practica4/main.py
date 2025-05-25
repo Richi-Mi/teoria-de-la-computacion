@@ -1,7 +1,5 @@
 from graphviz import Digraph
 
-
-
 # Pedimos el nombre del archivo donde definimos el automata.
 print("Ingresa archivo donde esta el automata: ")
 fileName = input()
