@@ -6,7 +6,7 @@ class AFN:
         self.alfabeto = []
         self.estado_inicial = ''
         self.estados_finales = []
-        self.transiciones = {}  # (estado, simbolo): [estados]
+        self.transiciones = {}
 
     def cargar_desde_archivo(self, archivo):
         with open(archivo, 'r') as f:
@@ -44,52 +44,67 @@ class AFD:
         self.estados = []
         self.estado_inicial = ''
         self.estados_finales = []
-        self.transiciones = {}  # (estado, simbolo): estado
+        self.transiciones = {}
+        self.nombres_estados = {}  # frozenset -> E1, E2...
 
     def agregar_transicion(self, desde, simbolo, hacia):
         self.transiciones[(desde, simbolo)] = hacia
 
-    def generar_dot(self, nombre_archivo='automata.png'):
+    def generar_dot(self, nombre_archivo='automata'):
         dot = graphviz.Digraph(format='png')
-        dot.attr(rankdir='LR')
+        dot.attr(rankdir='LR', fontname='Helvetica')
 
+        # Nodo invisible de inicio
         dot.node('', shape='none')
-        for estado in self.estados:
-            if estado in self.estados_finales:
-                dot.node(estado, shape='doublecircle')
-            else:
-                dot.node(estado)
 
-        dot.edge('', self.estado_inicial)
+        for estado in self.estados:
+            estilo = {
+                "style": "filled",
+                "fillcolor": "#1f77b4",  # Azul
+                "fontcolor": "white",
+                "fontname": "Helvetica"
+            }
+            forma = "doublecircle" if estado in self.estados_finales else "circle"
+            dot.node(estado, shape=forma, **estilo)
+
+        dot.edge('', self.estado_inicial, color="#006400")  # Verde oscuro
 
         for (desde, simbolo), hacia in self.transiciones.items():
-            dot.edge(desde, hacia, label=simbolo)
+            dot.edge(desde, hacia, label=simbolo, color="#006400", fontcolor="#006400", fontname="Helvetica")
 
         dot.render(nombre_archivo, cleanup=True)
+
+    def exportar_a_txt(self, nombre_archivo, alfabeto):
+        with open(nombre_archivo, 'w') as f:
+            f.write(" ".join(self.estados) + "\n")
+            f.write(self.estado_inicial + "\n")
+            f.write(" ".join(self.estados_finales) + "\n")
+            f.write(" ".join(alfabeto) + "\n")
+            for estado in self.estados:
+                linea = []
+                for simbolo in alfabeto:
+                    destino = self.transiciones.get((estado, simbolo), '-')
+                    linea.append(destino)
+                f.write(" ".join(linea) + "\n")
 
 
 def convertir_a_afd(afn):
     afd = AFD()
     alfabeto = [s for s in afn.alfabeto if s != 'ε']
-
     estado_inicial = frozenset(afn.cerradura_epsilon([afn.estado_inicial]))
-    conjunto_a_nombre = {}
+
     contador = [1]
-
-    def asignar_nombre(conjunto):
-        if not conjunto:
-            return None
-        if conjunto not in conjunto_a_nombre:
-            conjunto_a_nombre[conjunto] = f"E{contador[0]}"
+    def nombre_estado(conjunto):
+        if conjunto not in afd.nombres_estados:
+            afd.nombres_estados[conjunto] = f"E{contador[0]}"
             contador[0] += 1
-        return conjunto_a_nombre[conjunto]
+        return afd.nombres_estados[conjunto]
 
-    nombre_inicial = asignar_nombre(estado_inicial)
-    estados_afn_a_afd = {estado_inicial: nombre_inicial}
+    estados_afn_a_afd = {estado_inicial: nombre_estado(estado_inicial)}
     pendientes = [estado_inicial]
 
-    afd.estado_inicial = nombre_inicial
-    afd.estados.append(nombre_inicial)
+    afd.estado_inicial = estados_afn_a_afd[estado_inicial]
+    afd.estados.append(afd.estado_inicial)
 
     while pendientes:
         actual = pendientes.pop()
@@ -107,7 +122,7 @@ def convertir_a_afd(afn):
 
             destinos_frozenset = frozenset(destinos)
             if destinos_frozenset not in estados_afn_a_afd:
-                nombre_destino = asignar_nombre(destinos_frozenset)
+                nombre_destino = nombre_estado(destinos_frozenset)
                 estados_afn_a_afd[destinos_frozenset] = nombre_destino
                 afd.estados.append(nombre_destino)
                 pendientes.append(destinos_frozenset)
@@ -118,10 +133,7 @@ def convertir_a_afd(afn):
         if any(e in afn.estados_finales for e in conjunto_estados):
             afd.estados_finales.append(nombre)
 
-    # Mostrar equivalencia
-    print("Equivalencias de estados del AFD:")
-    for conjunto, nombre in conjunto_a_nombre.items():
-        print(f"{nombre} = {{{','.join(sorted(conjunto))}}}")
+    return afd
 
 
 def main():
@@ -140,7 +152,7 @@ def main():
 
     print("\n🔁 Convirtiendo a AFD...\n")
     afd = convertir_a_afd(afn)
-    print("\n✅ AFD generado con éxito.")
+    print("✅ AFD generado con éxito.")
     print("Estados del AFD:", afd.estados)
     print("Estado inicial del AFD:", afd.estado_inicial)
     print("Estados finales del AFD:", afd.estados_finales)
@@ -150,7 +162,42 @@ def main():
 
     afd.generar_dot()
     print("✅ Imagen del autómata generada como 'automata.png'")
+
+    afd.exportar_a_txt("AFD_generado.txt", [s for s in afn.alfabeto if s != 'ε'])
+    print("✅ Archivo 'AFD_generado.txt' generado con la descripción del AFD.")
     print(" * Ingresa cadenas para validar el autómata. Escribe 'SALIR' para terminar.")
+
+    alfabeto_sin_epsilon = [s for s in afn.alfabeto if s != 'ε']
+
+    while True:
+        cadena = input(">> ").strip()
+        if cadena.upper() == "SALIR":
+            print("Saliendo.")
+            break
+
+        estado_actual = afd.estado_inicial
+        recorrido = [estado_actual]
+        valida = True
+
+        for simbolo in cadena:
+            if simbolo not in alfabeto_sin_epsilon:
+                print(f"❌ Símbolo inválido: '{simbolo}' no está en el alfabeto.")
+                valida = False
+                break
+            estado_siguiente = afd.transiciones.get((estado_actual, simbolo))
+            if not estado_siguiente:
+                print(f"❌ No hay transición desde {estado_actual} con '{simbolo}'")
+                valida = False
+                break
+            recorrido.append(estado_siguiente)
+            estado_actual = estado_siguiente
+
+        if valida:
+            print("🔄 Recorrido:", " -> ".join(recorrido))
+            if estado_actual in afd.estados_finales:
+                print("✅ Cadena ACEPTADA.")
+            else:
+                print("❌ Cadena RECHAZADA. Estado final no es de aceptación.")
 
 
 if __name__ == "__main__":
