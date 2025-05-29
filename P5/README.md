@@ -19,6 +19,13 @@ Esta carpeta tiene varios archivos enumarados como  Prueba 1, 2 ,3....que fueron
 
 Luego, estan mainV1.py y mainV2.py, que también funcionan de forma optima, ya generando el AFD desde el AFN de entrada. Sin embargo, en temas de visualización de la imagen generada, no son la útlima versión.
 
+
+## Notas finales
+
+Sí, los programas de prueba carecen de documentación específica sobre el proceso, pero considero que con lo que tiene basta.
+
+Ya quedó :)
+
 ```bash
 python3 -m venv venv        # Crear entorno virtual
 source venv/bin/activate    # Activar entorno
