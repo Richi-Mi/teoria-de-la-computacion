@@ -1,0 +1,13 @@
+A B C D E F G H I
+A
+H I
+a b c
+- - - B
+C - - -
+- - - D,B
+- - - E,G
+- F - -
+- - - E,G
+- - H -
+- - - I
+- - - I
