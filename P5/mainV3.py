@@ -53,24 +53,25 @@ class AFD:
     def generar_dot(self, nombre_archivo='automata'):
         dot = graphviz.Digraph(format='png')
         dot.attr(rankdir='LR', fontname='Helvetica')
-
-        # Nodo invisible de inicio
         dot.node('', shape='none')
 
         for estado in self.estados:
-            estilo = {
-                "style": "filled",
-                "fillcolor": "#1f77b4",  # Azul
-                "fontcolor": "white",
-                "fontname": "Helvetica"
-            }
-            forma = "doublecircle" if estado in self.estados_finales else "circle"
-            dot.node(estado, shape=forma, **estilo)
+            shape = 'doublecircle' if estado in self.estados_finales else 'circle'
+            dot.node(estado,
+                     shape=shape,
+                     style='filled',
+                     fillcolor='#1E90FF',
+                     fontcolor='white',
+                     fontname='Helvetica-Bold')
 
-        dot.edge('', self.estado_inicial, color="#006400")  # Verde oscuro
+        dot.edge('', self.estado_inicial, color='#006400')
 
         for (desde, simbolo), hacia in self.transiciones.items():
-            dot.edge(desde, hacia, label=simbolo, color="#006400", fontcolor="#006400", fontname="Helvetica")
+            dot.edge(desde, hacia,
+                     label=simbolo,
+                     fontcolor='#006400',
+                     color='#006400',
+                     fontname='Helvetica-Bold')
 
         dot.render(nombre_archivo, cleanup=True)
 
@@ -133,7 +134,7 @@ def convertir_a_afd(afn):
         if any(e in afn.estados_finales for e in conjunto_estados):
             afd.estados_finales.append(nombre)
 
-    return afd
+    return afd, estados_afn_a_afd
 
 
 def main():
@@ -151,7 +152,7 @@ def main():
         print(f"({estado}, {simbolo}) -> {destinos}")
 
     print("\n🔁 Convirtiendo a AFD...\n")
-    afd = convertir_a_afd(afn)
+    afd, conjunto_a_nombre = convertir_a_afd(afn)
     print("✅ AFD generado con éxito.")
     print("Estados del AFD:", afd.estados)
     print("Estado inicial del AFD:", afd.estado_inicial)
@@ -160,13 +161,18 @@ def main():
     for (desde, simbolo), hacia in afd.transiciones.items():
         print(f"{desde} --{simbolo}--> {hacia}")
 
+    # Mostrar equivalencia
+    print("\nEquivalencias de estados del AFD:")
+    for conjunto, nombre in conjunto_a_nombre.items():
+        print(f"{nombre} = {{{', '.join(sorted(conjunto))}}}")
+
     afd.generar_dot()
     print("✅ Imagen del autómata generada como 'automata.png'")
 
     afd.exportar_a_txt("AFD_generado.txt", [s for s in afn.alfabeto if s != 'ε'])
     print("✅ Archivo 'AFD_generado.txt' generado con la descripción del AFD.")
-    print(" * Ingresa cadenas para validar el autómata. Escribe 'SALIR' para terminar.")
 
+    print(" * Ingresa cadenas para validar el autómata. Escribe 'SALIR' para terminar.")
     alfabeto_sin_epsilon = [s for s in afn.alfabeto if s != 'ε']
 
     while True:
@@ -202,3 +208,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+0
