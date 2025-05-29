@@ -1,0 +1,17 @@
+Edo0 Edo1 Edo2 Edo3 Edo4 Edo5 Edo6 Edo7 Edo8 Edo9 Edo10 Edo11 Edo12
+Edo0
+Edo11 Edo12
+a b
+- - Edo1,Edo8
+- - Edo2,Edo7
+- - Edo3,Edo5
+- Edo4 -
+- - Edo5,Edo3
+Edo6 - -
+- - Edo7,Edo2
+- - Edo10
+- Edo9 -
+- - Edo10
+Edo11 - -
+- - Edo12
+- Edo12 -

@@ -9,7 +9,7 @@ el resultado deberá ser almacenado en un archivo de salida.
 - Mostrar Quíntupla del AFN y del AFD, así como sus tablas de
 transiciones.
 
-```
+```bash
 python3 -m venv venv        # Crear entorno virtual
 source venv/bin/activate    # Activar entorno
 deactivate                  # Salir del entorno
