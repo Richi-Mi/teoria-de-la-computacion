@@ -136,6 +136,9 @@ class GrammarParser:
             self._remove_symbols(non_generative)
         else:
             print("No se encontraron símbolos no generativos")
+        
+        # PASO ADICIONAL: Eliminar producciones vacías (λ)
+        self.remove_empty_productions()
     
     def _is_generative(self, production: List[str], generative: Set[str]) -> bool:
         """Verifica si una producción es generativa"""
@@ -281,20 +284,120 @@ class GrammarParser:
         # Actualizar conjuntos de símbolos
         self.non_terminals -= symbols_to_remove
     
+    def remove_empty_productions(self):
+        """Elimina producciones vacías (λ-producciones)"""
+        print("\n=== ELIMINANDO PRODUCCIONES VACÍAS ===")
+        
+        # Paso 1: Encontrar símbolos que pueden derivar λ
+        nullable = set()
+        changed = True
+        
+        while changed:
+            changed = False
+            for nt, productions_list in self.productions.items():
+                if nt in nullable:
+                    continue
+                
+                for production in productions_list:
+                    if production == ['λ']:
+                        nullable.add(nt)
+                        changed = True
+                        print(f"  <{nt}> puede derivar λ (producción directa)")
+                        break
+                    elif self._all_nullable(production, nullable):
+                        nullable.add(nt)
+                        changed = True
+                        print(f"  <{nt}> puede derivar λ (producción: {' '.join(production)})")
+                        break
+        
+        # Paso 2: Generar nuevas producciones sin λ
+        new_productions = {}
+        
+        for nt, productions_list in self.productions.items():
+            new_productions[nt] = []
+            
+            for production in productions_list:
+                if production == ['λ']:
+                    # Solo mantener λ si es del símbolo inicial y es necesario
+                    if nt == self.start_symbol:
+                        # Verificar si el símbolo inicial necesita generar λ
+                        has_non_lambda = any(prod != ['λ'] for prod in productions_list)
+                        if not has_non_lambda:
+                            new_productions[nt].append(['λ'])
+                    continue
+                
+                # Generar todas las combinaciones sin símbolos que pueden ser λ
+                combinations = self._generate_combinations(production, nullable)
+                for combo in combinations:
+                    if combo and combo not in new_productions[nt]:  # No agregar producciones vacías
+                        new_productions[nt].append(combo)
+        
+        # Eliminar símbolos que solo tenían producciones λ
+        empty_symbols = []
+        for nt in list(new_productions.keys()):
+            if not new_productions[nt]:  # No tiene producciones
+                empty_symbols.append(nt)
+                del new_productions[nt]
+        
+        if empty_symbols:
+            print(f"Símbolos eliminados (solo tenían λ): {empty_symbols}")
+        
+        self.productions = new_productions
+        self._identify_symbols()  # Actualizar conjuntos de símbolos
+        
+        print("Producciones vacías eliminadas")
+    
+    def _all_nullable(self, production: List[str], nullable: Set[str]) -> bool:
+        """Verifica si todos los símbolos de una producción pueden derivar λ"""
+        for symbol in production:
+            if symbol.startswith('<') and symbol.endswith('>'):
+                nt = symbol[1:-1]
+                if nt not in nullable:
+                    return False
+            else:
+                # Es un terminal, no puede ser λ
+                return False
+        return True
+    
+    def _generate_combinations(self, production: List[str], nullable: Set[str]) -> List[List[str]]:
+        """Genera todas las combinaciones posibles eliminando símbolos nullable"""
+        if not production:
+            return [[]]
+        
+        result = []
+        first = production[0]
+        rest_combinations = self._generate_combinations(production[1:], nullable)
+        
+        # Agregar combinaciones que incluyen el primer símbolo
+        for combo in rest_combinations:
+            result.append([first] + combo)
+        
+        # Si el primer símbolo puede ser λ, agregar combinaciones sin él
+        if (first.startswith('<') and first.endswith('>') and 
+            first[1:-1] in nullable):
+            for combo in rest_combinations:
+                if combo:  # Solo agregar si no es vacía
+                    result.append(combo)
+        
+        return result
+    
     def clean_grammar(self):
         """Aplica todos los algoritmos de limpieza en orden"""
         print("=== INICIANDO LIMPIEZA COMPLETA DE GRAMÁTICA ===")
         self.print_grammar()
         
-        # Orden correcto: unitarias -> no generativos -> inaccesibles
+        # Orden correcto: producciones vacías -> unitarias -> no generativos -> inaccesibles
+        self.remove_empty_productions()
         self.remove_unit_productions()
         self.remove_useless_symbols()
         
         print("\n=== GRAMÁTICA LIMPIA ===")
         self.print_grammar()
 
-
-parser = GrammarParser()
-parser.load_from_file('example.txt')
-
-parser.clean_grammar()
+if __name__ == "__main__":
+    # Cargar y procesar gramática
+    parser = GrammarParser()
+    parser.load_from_file('example.txt')
+    
+    # Aplicar limpieza completa
+    parser.clean_grammar()
