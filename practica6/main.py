@@ -1,0 +1,300 @@
+import re
+from typing import Dict, List, Set, Tuple
+
+class GrammarParser:
+    def __init__(self):
+        self.productions = {}  # Dict[str, List[List[str]]]
+        self.terminals = set()
+        self.non_terminals = set()
+        self.start_symbol = None
+    
+    def load_from_file(self, filename: str):
+        """Carga la gramática desde un archivo de texto"""
+        with open(filename, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        
+        for line in lines:
+            line = line.strip()
+            if not line or line.startswith('#'):  # Ignorar líneas vacías y comentarios
+                continue
+            
+            self.parse_production(line)
+        
+        self._identify_symbols()
+        if not self.start_symbol:
+            # El primer símbolo no terminal encontrado es el inicial
+            self.start_symbol = next(iter(self.productions.keys()))
+    
+    def parse_production(self, line: str):
+        """Parsea una línea de producción: <A> := alpha | beta"""
+        # Dividir por :=
+        parts = line.split(':=')
+        if len(parts) != 2:
+            raise ValueError(f"Formato inválido: {line}")
+        
+        left_side = parts[0].strip()
+        right_side = parts[1].strip()
+        
+        # Extraer símbolo no terminal del lado izquierdo
+        match = re.match(r'<(\w+)>', left_side)
+        if not match:
+            raise ValueError(f"Símbolo no terminal inválido: {left_side}")
+        
+        non_terminal = match.group(1)
+        
+        # Dividir producciones por |
+        productions = right_side.split('|')
+        
+        if non_terminal not in self.productions:
+            self.productions[non_terminal] = []
+        
+        for production in productions:
+            production = production.strip()
+            parsed_production = self._parse_right_side(production)
+            self.productions[non_terminal].append(parsed_production)
+    
+    def _parse_right_side(self, production: str) -> List[str]:
+        """Parsea el lado derecho de una producción"""
+        if production == 'λ' or production == 'lambda':
+            return ['λ']
+        
+        tokens = []
+        i = 0
+        while i < len(production):
+            if production[i] == '<':
+                # Encontrar el símbolo no terminal completo
+                end = production.find('>', i)
+                if end == -1:
+                    raise ValueError(f"Símbolo no terminal mal formateado: {production}")
+                tokens.append(production[i:end+1])
+                i = end + 1
+            elif production[i].isspace():
+                i += 1
+            else:
+                # Símbolo terminal
+                tokens.append(production[i])
+                i += 1
+        
+        return tokens
+    
+    def _identify_symbols(self):
+        """Identifica símbolos terminales y no terminales"""
+        self.non_terminals = set(self.productions.keys())
+        
+        for productions_list in self.productions.values():
+            for production in productions_list:
+                for symbol in production:
+                    if symbol.startswith('<') and symbol.endswith('>'):
+                        # Es un no terminal
+                        nt = symbol[1:-1]
+                        self.non_terminals.add(nt)
+                    elif symbol != 'λ':
+                        # Es un terminal
+                        self.terminals.add(symbol)
+    
+    def print_grammar(self):
+        """Imprime la gramática de forma legible"""
+        print("=== GRAMÁTICA ===")
+        print(f"Símbolo inicial: <{self.start_symbol}>")
+        print(f"No terminales: {{{', '.join(sorted(self.non_terminals))}}}")
+        print(f"Terminales: {{{', '.join(sorted(self.terminals))}}}")
+        print("\nProducciones:")
+        
+        for nt in sorted(self.productions.keys()):
+            productions_str = []
+            for prod in self.productions[nt]:
+                prod_str = ''.join(prod) if prod != ['λ'] else 'λ'
+                productions_str.append(prod_str)
+            print(f"  <{nt}> := {' | '.join(productions_str)}")
+    
+    # ===== ALGORITMOS DE LIMPIEZA =====
+    
+    def remove_non_generative(self):
+        """Elimina símbolos no generativos (que no generan cadenas de terminales)"""
+        print("\n=== ELIMINANDO SÍMBOLOS NO GENERATIVOS ===")
+        
+        generative = set()
+        changed = True
+        
+        while changed:
+            changed = False
+            for nt, productions_list in self.productions.items():
+                if nt in generative:
+                    continue
+                
+                for production in productions_list:
+                    if self._is_generative(production, generative):
+                        generative.add(nt)
+                        changed = True
+                        print(f"  <{nt}> es generativo")
+                        break
+        
+        # Eliminar símbolos no generativos
+        non_generative = self.non_terminals - generative
+        if non_generative:
+            print(f"Símbolos no generativos encontrados: {non_generative}")
+            self._remove_symbols(non_generative)
+        else:
+            print("No se encontraron símbolos no generativos")
+    
+    def _is_generative(self, production: List[str], generative: Set[str]) -> bool:
+        """Verifica si una producción es generativa"""
+        if production == ['λ']:
+            return True
+        
+        for symbol in production:
+            if symbol.startswith('<') and symbol.endswith('>'):
+                nt = symbol[1:-1]
+                if nt not in generative:
+                    return False
+            # Los terminales siempre son generativos
+        
+        return True
+    
+    def remove_unreachable(self):
+        """Elimina símbolos inaccesibles desde el símbolo inicial"""
+        print("\n=== ELIMINANDO SÍMBOLOS INACCESIBLES ===")
+        
+        reachable = set()
+        queue = [self.start_symbol]
+        reachable.add(self.start_symbol)
+        
+        while queue:
+            current = queue.pop(0)
+            if current in self.productions:
+                for production in self.productions[current]:
+                    for symbol in production:
+                        if symbol.startswith('<') and symbol.endswith('>'):
+                            nt = symbol[1:-1]
+                            if nt not in reachable:
+                                reachable.add(nt)
+                                queue.append(nt)
+                                print(f"  <{nt}> es accesible desde <{current}>")
+        
+        # Eliminar símbolos inaccesibles
+        unreachable = self.non_terminals - reachable
+        if unreachable:
+            print(f"Símbolos inaccesibles encontrados: {unreachable}")
+            self._remove_symbols(unreachable)
+        else:
+            print("No se encontraron símbolos inaccesibles")
+    
+    def remove_unit_productions(self):
+        """Elimina producciones unitarias (A -> B)"""
+        print("\n=== ELIMINANDO PRODUCCIONES UNITARIAS ===")
+        
+        # Encontrar todas las producciones unitarias
+        unit_pairs = []
+        for nt, productions_list in self.productions.items():
+            for production in productions_list:
+                if (len(production) == 1 and 
+                    production[0].startswith('<') and 
+                    production[0].endswith('>')):
+                    target = production[0][1:-1]
+                    unit_pairs.append((nt, target))
+                    print(f"  Producción unitaria: <{nt}> -> <{target}>")
+        
+        if not unit_pairs:
+            print("No se encontraron producciones unitarias")
+            return
+        
+        # Calcular clausura transitiva de pares unitarios
+        unit_closure = {}
+        for nt in self.non_terminals:
+            unit_closure[nt] = self._unit_closure(nt, unit_pairs)
+        
+        # Crear nuevas producciones
+        new_productions = {}
+        for nt in self.productions:
+            new_productions[nt] = []
+            
+            # Agregar producciones no unitarias originales
+            for production in self.productions[nt]:
+                if not (len(production) == 1 and 
+                       production[0].startswith('<') and 
+                       production[0].endswith('>')):
+                    new_productions[nt].append(production)
+            
+            # Agregar producciones derivadas de la clausura unitaria
+            for target in unit_closure[nt]:
+                if target in self.productions:
+                    for production in self.productions[target]:
+                        if not (len(production) == 1 and 
+                               production[0].startswith('<') and 
+                               production[0].endswith('>')):
+                            new_productions[nt].append(production)
+        
+        self.productions = new_productions
+        print("Producciones unitarias eliminadas")
+    
+    def _unit_closure(self, nt: str, unit_pairs: List[Tuple[str, str]]) -> Set[str]:
+        """Calcula la clausura transitiva de producciones unitarias"""
+        closure = {nt}
+        changed = True
+        
+        while changed:
+            changed = False
+            for src, target in unit_pairs:
+                if src in closure and target not in closure:
+                    closure.add(target)
+                    changed = True
+        
+        closure.remove(nt)  # Remover el símbolo original
+        return closure
+    
+    def remove_useless_symbols(self):
+        """Elimina símbolos inútiles (no generativos + inaccesibles)"""
+        print("\n=== LIMPIEZA COMPLETA DE SÍMBOLOS INÚTILES ===")
+        original_count = len(self.non_terminals)
+        
+        # Primero eliminar no generativos, luego inaccesibles
+        self.remove_non_generative()
+        self.remove_unreachable()
+        
+        final_count = len(self.non_terminals)
+        print(f"Símbolos eliminados: {original_count - final_count}")
+    
+    def _remove_symbols(self, symbols_to_remove: Set[str]):
+        """Elimina símbolos de la gramática"""
+        # Eliminar producciones de estos símbolos
+        for symbol in symbols_to_remove:
+            if symbol in self.productions:
+                del self.productions[symbol]
+        
+        # Eliminar apariciones en el lado derecho
+        for nt in list(self.productions.keys()):
+            new_productions = []
+            for production in self.productions[nt]:
+                # Verificar si la producción contiene símbolos eliminados
+                contains_removed = False
+                for symbol in production:
+                    if symbol.startswith('<') and symbol.endswith('>'):
+                        if symbol[1:-1] in symbols_to_remove:
+                            contains_removed = True
+                            break
+                
+                if not contains_removed:
+                    new_productions.append(production)
+            
+            self.productions[nt] = new_productions
+        
+        # Actualizar conjuntos de símbolos
+        self.non_terminals -= symbols_to_remove
+    
+    def clean_grammar(self):
+        """Aplica todos los algoritmos de limpieza en orden"""
+        print("=== INICIANDO LIMPIEZA COMPLETA DE GRAMÁTICA ===")
+        self.print_grammar()
+        
+        # Orden correcto: unitarias -> no generativos -> inaccesibles
+        self.remove_unit_productions()
+        self.remove_useless_symbols()
+        
+        print("\n=== GRAMÁTICA LIMPIA ===")
+        self.print_grammar()
+
+
+parser = GrammarParser()
+parser.load_from_file('example.txt')
+
+parser.clean_grammar()
