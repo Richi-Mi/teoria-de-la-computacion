@@ -393,11 +393,156 @@ class GrammarParser:
         
         print("\n=== GRAMÁTICA LIMPIA ===")
         self.print_grammar()
+    
+    def classify_grammar(self):
+        """Clasifica la gramática según la jerarquía de Chomsky"""
+        print("\n=== CLASIFICACIÓN DE GRAMÁTICA ===")
+        
+        # Verificar en orden: Tipo 3 -> Tipo 2 -> Tipo 1 -> Tipo 0
+        if self._is_type3():
+            print("🔸 TIPO 3 - Gramática Regular")
+            return 3
+        elif self._is_type2():
+            print("🔸 TIPO 2 - Gramática Libre de Contexto")
+            return 2
+        elif self._is_type1():
+            print("🔸 TIPO 1 - Gramática Sensible al Contexto")
+            return 1
+        else:
+            print("🔸 TIPO 0 - Gramática Sin Restricciones")
+            return 0
+    
+    def _is_type3(self):
+        """Verifica si es Tipo 3 (Regular)"""
+        print("  Verificando Tipo 3 (Regular)...")
+        
+        for nt, productions_list in self.productions.items():
+            for production in productions_list:
+                if production == ['λ']:
+                    continue
+                
+                # Verificar formato: A -> a | aB | a (lineal derecha)
+                # o A -> a | Ba | a (lineal izquierda)
+                if not self._is_regular_production(production):
+                    print(f"    ❌ <{nt}> := {''.join(production)} no es regular")
+                    return False
+        
+        print("    ✅ Todas las producciones son regulares")
+        return True
+    
+    def _is_regular_production(self, production):
+        """Verifica si una producción es regular"""
+        if len(production) == 1:
+            # A -> a (terminal)
+            return production[0] in self.terminals
+        elif len(production) == 2:
+            # A -> aB (lineal derecha) o A -> Ba (lineal izquierda)
+            first, second = production[0], production[1]
+            
+            # Lineal derecha: terminal + no terminal
+            if (first in self.terminals and 
+                second.startswith('<') and second.endswith('>')):
+                return True
+            
+            # Lineal izquierda: no terminal + terminal
+            if (first.startswith('<') and first.endswith('>') and 
+                second in self.terminals):
+                return True
+        
+        return False
+    
+    def _is_type2(self):
+        """Verifica si es Tipo 2 (Libre de Contexto)"""
+        print("  Verificando Tipo 2 (Libre de Contexto)...")
+        
+        for nt, productions_list in self.productions.items():
+            # Verificar que el lado izquierdo sea un solo no terminal
+            # (esto ya está garantizado por nuestro parser, pero lo verificamos)
+            if len(nt) == 0:
+                print(f"    ❌ Lado izquierdo vacío")
+                return False
+            
+            # En gramáticas libres de contexto, lado izquierdo = un no terminal
+            # lado derecho = cualquier cadena de terminales y no terminales
+            for production in productions_list:
+                # Cualquier producción es válida en gramáticas libres de contexto
+                # siempre que el lado izquierdo sea un solo no terminal
+                pass
+        
+        print("    ✅ Es libre de contexto (lado izquierdo = un no terminal)")
+        return True
+    
+    def _is_type1(self):
+        """Verifica si es Tipo 1 (Sensible al Contexto)"""
+        print("  Verificando Tipo 1 (Sensible al Contexto)...")
+        
+        for nt, productions_list in self.productions.items():
+            for production in productions_list:
+                if production == ['λ']:
+                    # λ-producciones solo permitidas en símbolo inicial
+                    # si no aparece en lado derecho
+                    if nt != self.start_symbol or self._appears_in_right_side(nt):
+                        print(f"    ❌ λ-producción inválida en <{nt}>")
+                        return False
+                    continue
+                
+                # Verificar restricción de longitud: |α| ≤ |β|
+                # En nuestro caso simplificado: lado izquierdo ≤ lado derecho
+                left_length = 1  # Un no terminal
+                right_length = len(production)
+                
+                if left_length > right_length:
+                    print(f"    ❌ Violación de longitud: <{nt}> := {''.join(production)}")
+                    return False
+        
+        print("    ✅ Cumple restricciones de longitud")
+        return True
+    
+    def _appears_in_right_side(self, symbol):
+        """Verifica si un símbolo aparece en el lado derecho de alguna producción"""
+        target = f"<{symbol}>"
+        for productions_list in self.productions.values():
+            for production in productions_list:
+                if target in production:
+                    return True
+        return False
+    
+    def detailed_analysis(self):
+        """Análisis detallado de la gramática"""
+        print("\n=== ANÁLISIS DETALLADO ===")
+        
+        # Información básica
+        print(f"Símbolo inicial: <{self.start_symbol}>")
+        print(f"No terminales ({len(self.non_terminals)}): {{{', '.join(sorted(self.non_terminals))}}}")
+        print(f"Terminales ({len(self.terminals)}): {{{', '.join(sorted(self.terminals))}}}")
+        print(f"Total de producciones: {sum(len(prods) for prods in self.productions.values())}")
+        
+        # Análisis de producciones
+        lambda_prods = 0
+        unit_prods = 0
+        
+        for nt, productions_list in self.productions.items():
+            for production in productions_list:
+                if production == ['λ']:
+                    lambda_prods += 1
+                elif (len(production) == 1 and 
+                      production[0].startswith('<') and 
+                      production[0].endswith('>')):
+                    unit_prods += 1
+        
+        print(f"Producciones λ: {lambda_prods}")
+        print(f"Producciones unitarias: {unit_prods}")
+        
+        # Clasificación
+        grammar_type = self.classify_grammar()
+        
+        return grammar_type
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     # Cargar y procesar gramática
     parser = GrammarParser()
     parser.load_from_file('example.txt')
+    parser.classify_grammar()
     
     # Aplicar limpieza completa
     parser.clean_grammar()
