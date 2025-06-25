@@ -4,3 +4,5 @@ practica3/v2.py
 *.docx
 *venv/
 *.png
+*/.DS_STORE
+.DS_STORE

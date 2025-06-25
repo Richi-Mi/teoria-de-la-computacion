@@ -1,9 +1,6 @@
 from graphviz import Digraph
 from collections import deque
 
-# a+b*c
-# (b|(b*a)*)ab*
-
 # Pedimos el nombre del archivo donde definimos el automata.
 print("Ingresa archivo donde esta el automata: ")
 fileName = input()
@@ -171,7 +168,6 @@ except FileNotFoundError:
     print(" X - Archivo no encontrado")
     exit(1)
 except Exception:
-    print(Exception.__str__)
     print(" X - Ocurrio un error inesperado.")
     exit(1)
     
