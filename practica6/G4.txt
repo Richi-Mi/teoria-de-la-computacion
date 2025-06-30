@@ -1,0 +1,10 @@
+<S>::=[0-9]<BA><AA>|<CA>|<HA>
+<AA>::=c<GA>d|<GA>
+<BA>::=<EA>|[a-z]<S>|<BA>a|[0-9]
+<CA>::=g<DA>|h<DA>t|g<DA>tr|g<DA>tr[0-9]
+<DA>::=x|y|z|<CA>
+<EA>::=<AA><HA>|c<BA>
+<FA>::=<AA><BA>| <GA>a
+<GA>::=<FA><GA>|<GA><HA>
+<HA>::=<HA>a|<BA><HA>|<EA>
+<JA>::=<HA>a|<BA><EA>|asa

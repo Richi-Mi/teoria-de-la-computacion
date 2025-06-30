@@ -8,46 +8,49 @@ class GrammarParser:
         self.non_terminals = set()
         self.start_symbol = None
     
+    # Carga la gramatica desde un archivo de texto.
     def load_from_file(self, filename: str):
-        """Carga la gramática desde un archivo de texto"""
         with open(filename, 'r', encoding='utf-8') as file:
             lines = file.readlines()
         
         for line in lines:
             line = line.strip()
-            if not line or line.startswith('#'):  # Ignorar líneas vacías y comentarios
+            # Ignorar líneas vacías.
+            if not line:
                 continue
             
             self.parse_production(line)
         
+        # Clasifica en terminales y no terminales.
         self._identify_symbols()
         if not self.start_symbol:
             # El primer símbolo no terminal encontrado es el inicial
             self.start_symbol = next(iter(self.productions.keys()))
     
     def parse_production(self, line: str):
-        """Parsea una línea de producción: <A> := alpha | beta"""
-        # Dividir por :=
-        parts = line.split(':=')
+        # Divide por :=
+        parts = line.split(':=') # [<A>,  alpha | beta]
         if len(parts) != 2:
             raise ValueError(f"Formato inválido: {line}")
         
-        left_side = parts[0].strip()
+        left_side = parts[0].strip() # Limpia de espacios innecesarios.
         right_side = parts[1].strip()
         
         # Extraer símbolo no terminal del lado izquierdo
         match = re.match(r'<(\w+)>', left_side)
         if not match:
-            raise ValueError(f"Símbolo no terminal inválido: {left_side}")
+            raise ValueError(f"Símbolo no terminal inválido, Gramatica Tipo 1: {left_side}")
         
         non_terminal = match.group(1)
         
         # Dividir producciones por |
         productions = right_side.split('|')
         
+        # Verificar que el no terminal no esta ya en nuestra lista.
         if non_terminal not in self.productions:
             self.productions[non_terminal] = []
         
+        # Añade las reglas de producción a cada no_terminal mediante un diccionario.
         for production in productions:
             production = production.strip()
             parsed_production = self._parse_right_side(production)
@@ -55,7 +58,7 @@ class GrammarParser:
     
     def _parse_right_side(self, production: str) -> List[str]:
         """Parsea el lado derecho de una producción"""
-        if production == 'λ' or production == 'lambda':
+        if production == 'λ':
             return ['λ']
         
         tokens = []
@@ -108,9 +111,7 @@ class GrammarParser:
             print(f"  <{nt}> := {' | '.join(productions_str)}")
     
     # ===== ALGORITMOS DE LIMPIEZA =====
-    
     def remove_non_generative(self):
-        """Elimina símbolos no generativos (que no generan cadenas de terminales)"""
         print("\n=== ELIMINANDO SÍMBOLOS NO GENERATIVOS ===")
         
         generative = set()
@@ -382,11 +383,10 @@ class GrammarParser:
         return result
     
     def clean_grammar(self):
-        """Aplica todos los algoritmos de limpieza en orden"""
-        print("=== INICIANDO LIMPIEZA COMPLETA DE GRAMÁTICA ===")
+        """Algoritmos de limpieza"""
         self.print_grammar()
         
-        # Orden correcto: producciones vacías -> unitarias -> no generativos -> inaccesibles
+        # Orden de limpieza: producciones vacías -> unitarias -> no generativos -> inaccesibles
         self.remove_empty_productions()
         self.remove_unit_productions()
         self.remove_useless_symbols()
@@ -394,8 +394,7 @@ class GrammarParser:
         print("\n=== GRAMÁTICA LIMPIA ===")
         self.print_grammar()
     
-    def classify_grammar(self):
-        """Clasifica la gramática según la jerarquía de Chomsky"""
+    def classify_grammar( self ):
         print("\n=== CLASIFICACIÓN DE GRAMÁTICA ===")
         
         # Verificar en orden: Tipo 3 -> Tipo 2 -> Tipo 1 -> Tipo 0
@@ -538,11 +537,14 @@ class GrammarParser:
         
         return grammar_type
 
+# G1, G3, G4, G5
+# G2. Tipo 1
 if __name__ == "__main__":    
     # Cargar y procesar gramática
     parser = GrammarParser()
-    parser.load_from_file('example.txt')
-    parser.classify_grammar()
-    
-    # Aplicar limpieza completa
-    parser.clean_grammar()
+    parser.load_from_file('G5.txt')
+    grammar_type = parser.classify_grammar()
+
+    if grammar_type == 2 or grammar_type == 3:    
+        # Aplicar limpieza completa
+        parser.clean_grammar()

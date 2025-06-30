@@ -1,0 +1,8 @@
+<S>::=a<A>bc
+<A>b::=b<A>
+<A>c::=<B>bcc
+b<B>::=bba<A>|<A>aa 
+<B>::=bb|<N>
+<C>::=<A>bc|[a-z]
+<N>::=<NN>a|b<N>
+<NN>::=<N>c
